@@ -1,0 +1,1 @@
+'your-controller-name' => 'your-controller-name/index',
