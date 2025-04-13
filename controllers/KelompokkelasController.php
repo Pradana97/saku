@@ -2,14 +2,15 @@
 
 namespace app\controllers;
 
+use app\models\Detailkelompokkelas;
 use Yii;
-use app\models\Murid;
-use app\models\MuridSearch;
-use yii\web\{Controller, Response, NotFoundHttpException, UploadedFile};
+use app\models\Kelompokkelas;
+use app\models\KelompokkelasSearch;
+use yii\web\{Controller, Response, NotFoundHttpException};
 use yii\filters\VerbFilter;
 use yii\helpers\{Html, Url, ArrayHelper};
 
-class MuridController extends Controller
+class KelompokkelasController extends Controller
 {
     public function behaviors()
     {
@@ -25,7 +26,7 @@ class MuridController extends Controller
     }
     public function actionIndex()
     {
-        $searchModel = new MuridSearch();
+        $searchModel = new KelompokkelasSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         return $this->render('index', [
             'searchModel' => $searchModel,
@@ -39,7 +40,7 @@ class MuridController extends Controller
         if ($request->isAjax) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             return [
-                'title' => "Murid #" . $id,
+                'title' => "Kelompokkelas #" . $id,
                 'content' => $this->renderAjax('view', [
                     'model' => $model,
                 ]),
@@ -55,12 +56,12 @@ class MuridController extends Controller
     public function actionCreate()
     {
         $request = Yii::$app->request;
-        $model = new Murid();
+        $model = new Kelompokkelas();
         if ($request->isAjax) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             if ($request->isGet) {
                 return [
-                    'title' => "Create new Murid",
+                    'title' => "Create new Kelompokkelas",
                     'content' => $this->renderAjax('create', [
                         'model' => $model,
                     ]),
@@ -68,28 +69,18 @@ class MuridController extends Controller
                         Html::button('Save', ['class' => 'btn btn-primary', 'type' => "submit"])
 
                 ];
-            } else if ($model->load($request->post())) {
-                $image = UploadedFile::getInstance($model, 'foto');
-
-                if (!empty($image)) {
-                    $model->foto = $image;
-                    $model->save(false);
-                    $image->saveAs(Yii::$app->basePath . '/web/uploads/murid/' . $model->id_murid . $image->name);
-                } else {
-                    // Yii::$app->session->setFlash('warning', "file belum di lengkapi, mohon untuk melengkapinya");
-                    $model->save(false);
-                }
+            } else if ($model->load($request->post()) && $model->save()) {
                 return [
                     'forceReload' => '#crud-datatable' . $model->hash . '-pjax',
-                    'title' => "Create new Murid",
-                    'content' => '<span class="text-success">Create Murid success</span>',
+                    'title' => "Create new Kelompokkelas",
+                    'content' => '<span class="text-success">Create Kelompokkelas success</span>',
                     'footer' => Html::button('Close', ['class' => 'btn btn-default pull-left', 'data-dismiss' => "modal"]) .
                         Html::a('Create More', ['create'], ['class' => 'btn btn-primary', 'role' => 'modal-remote', 'data-target' => '#' . $model->hash])
 
                 ];
             } else {
                 return [
-                    'title' => "Create new Murid",
+                    'title' => "Create new Kelompokkelas",
                     'content' => $this->renderAjax('create', [
                         'model' => $model,
                     ]),
@@ -100,7 +91,7 @@ class MuridController extends Controller
             }
         } else {
             if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id_murid]);
+                return $this->redirect(['view', 'id' => $model->id_kelompok]);
             } else {
                 return $this->render('create', [
                     'model' => $model,
@@ -112,32 +103,21 @@ class MuridController extends Controller
     {
         $request = Yii::$app->request;
         $model = $this->findModel($id);
-        $oldfile = $model->foto ?? '';
         if ($request->isAjax) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             if ($request->isGet) {
                 return [
-                    'title' => "Update Murid #" . $id,
+                    'title' => "Update Kelompokkelas #" . $id,
                     'content' => $this->renderAjax('update', [
                         'model' => $model,
                     ]),
                     'footer' => Html::button('Close', ['class' => 'btn btn-default pull-left', 'data-dismiss' => "modal"]) .
                         Html::button('Save', ['class' => 'btn btn-primary', 'type' => "submit"])
                 ];
-            } else if ($model->load($request->post())) {
-                $image = UploadedFile::getInstance($model, 'foto');
-                if (!empty($image)) {
-                    unlink(Yii::$app->basePath . '/web/uploads/murid/' . $model->id_murid . $oldfile);
-                    $model->foto = $image;
-                    $model->save(false);
-                    $image->saveAs(Yii::$app->basePath . '/web/uploads/murid/' . $model->id_murid . $image->name);
-                } else {
-                    $model->foto = $oldfile;
-                    $model->save(false);
-                }
+            } else if ($model->load($request->post()) && $model->save()) {
                 return [
                     'forceReload' => '#crud-datatable' . $model->hash . '-pjax',
-                    'title' => "Murid #" . $id,
+                    'title' => "Kelompokkelas #" . $id,
                     'content' => $this->renderAjax('view', [
                         'model' => $model,
                     ]),
@@ -146,7 +126,7 @@ class MuridController extends Controller
                 ];
             } else {
                 return [
-                    'title' => "Update Murid #" . $id,
+                    'title' => "Update Kelompokkelas #" . $id,
                     'content' => $this->renderAjax('update', [
                         'model' => $model,
                     ]),
@@ -156,7 +136,7 @@ class MuridController extends Controller
             }
         } else {
             if ($model->load($request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->id_murid]);
+                return $this->redirect(['view', 'id' => $model->id_kelompok]);
             } else {
                 return $this->render('update', [
                     'model' => $model,
@@ -168,8 +148,6 @@ class MuridController extends Controller
     {
         $request = Yii::$app->request;
         $model = $this->findModel($id);
-        $oldfile = $model->foto;
-        unlink(Yii::$app->basePath . '/web/uploads/murid/' . $model->id_murid . $oldfile);
         $model->delete();
         if ($request->isAjax) {
             Yii::$app->response->format = Response::FORMAT_JSON;
@@ -196,10 +174,57 @@ class MuridController extends Controller
     }
     protected function findModel($id)
     {
-        if (($model = Murid::findOne($id)) !== null) {
+        if (($model = Kelompokkelas::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
+        }
+    }
+
+    public function actionGroup($nd)
+    {
+        $request = Yii::$app->request;
+        $model = new Detailkelompokkelas();
+        $data = Kelompokkelas::find()->where(['id_kelompok' => $nd])->one();
+
+        if ($model->load($request->post())) {
+
+            $cekdata = Detailkelompokkelas::find()->where(['id_murid' => $model->id_murid])->one();
+
+            if (!empty($cekdata)) {
+                Yii::$app->session->setFlash('danger', 'Data Sudah Ada.');
+            } else {
+                $model->id_kelompok = $nd;
+
+                if ($model->save()) {
+                    Yii::$app->session->setFlash('success', 'Data berhasil disimpan.');
+                } else {
+                    Yii::$app->session->setFlash('error', 'Data gagal disimpan.');
+                }
+            }
+            // Redirect balik ke halaman yang sama
+            return $this->redirect(['group', 'nd' => $nd]);
+        }
+
+        return $this->render('group', [
+            'data' => $data,
+            'model' => $model,
+            'title' => '',
+            'nd' => $nd
+        ]);
+    }
+
+    public function actionDeleteDetail()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $id = Yii::$app->request->post('id');
+        $model = Detailkelompokkelas::findOne($id);
+
+        if ($model && $model->delete()) {
+            return ['success' => true];
+        } else {
+            return ['success' => false];
         }
     }
 }

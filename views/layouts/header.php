@@ -1,5 +1,7 @@
 <?php
 
+use app\models\Murid;
+use app\models\Pegawai;
 use yii\helpers\{Url, Html};
 
 $base = Url::home(true);
@@ -170,14 +172,39 @@ function play(){
                 </li> -->
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <img src="<?= \Yii::getAlias('@web/uploads/module-free.gif') ?>" class="img-circle" alt="User Image" width="18px" />
+                        <img src="<?= \Yii::getAlias('@web/img/BurgerMenu.gif') ?>" class="img-circle" alt="User Image" width="18px" />
                         <span class="hidden-xs"><?= (Yii::$app->user->isGuest) ? 'Guest' : Yii::$app->user->identity->username ?? ''; ?></span>
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
+                        <?php
+                        $a = Yii::$app->user->identity->id ?? '';
+                        $role = \Yii::$app->tools->getcurrentroleuser();
+                        $roleValue = reset($role);
+
+                        if ($roleValue == 'murid') {
+                            $foto = Murid::find()->where(['user_id' => $a])->one();
+                            if ($foto && $foto->foto) {
+                                $imgSrc = \Yii::getAlias('@web/uploads/murid/' . $foto->id_murid . $foto->foto);
+                            } else {
+                                $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                            }
+                        } elseif ($roleValue == 'guru') {
+                            $foto = Pegawai::find()->where(['id_user' => $a])->one();
+                            if ($foto && $foto->foto) {
+                                $imgSrc = \Yii::getAlias('@web/uploads/pegawai/' . $foto->id_pegawai . $foto->foto);
+                            } else {
+                                $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                            }
+                        } else {
+                            $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                        }
+                        
+                        ?>
+
                         <li class="user-header">
-                            <img src="<?= \Yii::getAlias('@web/uploads/module-free.gif') ?>" class="img-circle" alt="User Image" />
-                            <p><?= (Yii::$app->user->isGuest) ? 'Guest' : Yii::$app->user->identity->username ?? ''; ?></p>
+                            <img src="<?= $imgSrc ?>" class="img-circle" alt="User Image" />
+                            <p><?= (Yii::$app->user->isGuest) ? 'Guest' : $foto->nama ?? ''; ?></p>
                         </li>
                         <!-- Menu Body -->
                         <!-- <li class="user-body">

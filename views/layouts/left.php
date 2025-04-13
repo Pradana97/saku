@@ -1,16 +1,44 @@
 <?php
 
 use app\models\Menu;
+use app\models\Murid;
+use app\models\Pegawai;
 use yii\helpers\ArrayHelper;
+
+$a = Yii::$app->user->identity->id ?? '';
+$role = \Yii::$app->tools->getcurrentroleuser();
+$roleValue = reset($role);
+// var_dump($roleValue);die;
 ?>
 <aside class="main-sidebar">
     <section class="sidebar">
         <div class="user-panel">
             <div class="pull-left image">
-                <img src="<?= \Yii::getAlias('@web/uploads/module-free.gif') ?>" class="img-circle" alt="User Image" />
+                <?php
+                 
+                if ($roleValue == 'murid') {
+                    $foto = Murid::find()->where(['user_id' => $a])->one();
+                    if ($foto && $foto->foto) {
+                        $imgSrc = \Yii::getAlias('@web/uploads/murid/' . $foto->id_murid . $foto->foto);
+                    } else {
+                        $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                    }
+                } elseif ($roleValue == 'guru') {
+                    $foto = Pegawai::find()->where(['id_user' => $a])->one();
+                    if ($foto && $foto->foto) {
+                        $imgSrc = \Yii::getAlias('@web/uploads/pegawai/' . $foto->id_pegawai . $foto->foto);
+                    } else {
+                        $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                    }
+                }else{
+                    $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                }
+                ?>
+                    <img src="<?= $imgSrc ?>" alt="User Image" />
+                
             </div>
             <div class="pull-left info">
-                <p><?= \Yii::$app->user->identity->username??''; ?></p>
+                <p><?= \Yii::$app->user->identity->username ?? ''; ?></p>
                 <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
             </div>
         </div>
@@ -27,7 +55,7 @@ use yii\helpers\ArrayHelper;
         $menu[] = Yii::$app->user->isGuest ? (['label' => 'Login', 'url' => ['/site/login'], 'icon' => 'glyphicon glyphicon-log-in']
         ) : (['label' => 'Logout', 'url' => ['/site/logout'], 'icon' => 'glyphicon glyphicon-log-out', 'options' => ['data-method' => 'post']]
         );
-        dmstr\widgets\Menu::$iconClassPrefix='';
+        dmstr\widgets\Menu::$iconClassPrefix = '';
         ?>
         <?= dmstr\widgets\Menu::widget(
             [
