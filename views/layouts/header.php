@@ -197,9 +197,14 @@ function play(){
                                 $imgSrc = \Yii::getAlias('@web/uploads/default.png');
                             }
                         } else {
-                            $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                            $foto = Pegawai::find()->where(['id_user' => $a])->one();
+                            if ($foto && $foto->foto) {
+                                $imgSrc = \Yii::getAlias('@web/uploads/pegawai/' . $foto->id_pegawai . $foto->foto);
+                            } else {
+                                $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                            }
                         }
-                        
+
                         ?>
 
                         <li class="user-header">

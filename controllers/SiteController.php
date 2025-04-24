@@ -1,10 +1,13 @@
 <?php
+
 namespace app\controllers;
+
 use Yii;
 use yii\filters\{AccessControl, VerbFilter};
 use yii\web\{Controller, Response};
 use app\models\{Contact, LoginForm, ContactForm, Setting, Transaksi};
 use yii\helpers\{Url, Html, ArrayHelper};
+
 class SiteController extends Controller
 {
     public function behaviors()
@@ -39,7 +42,8 @@ class SiteController extends Controller
                 'class' => 'yii\captcha\CaptchaAction',
                 'minLength' => 3,
                 'maxLength' => 3,
-                'width' => 130, 'height' => 55,
+                'width' => 130,
+                'height' => 55,
                 'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
             ],
         ];

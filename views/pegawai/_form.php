@@ -49,7 +49,7 @@ $dataid = ArrayHelper::map(\app\models\Userid::find()->all(), 'id', 'username');
                     ],
                 ]) ?>
 
-                <?= $form->field($model, 'foto')->fileInput(['onchange' => 'previewImage(this)'])->label('File') ?>
+                <?= $form->field($model, 'foto')->fileInput(['onchange' => 'previewImage(this)'])->label('Foto') ?>
 
 
             </div>

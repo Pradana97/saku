@@ -15,7 +15,7 @@ $roleValue = reset($role);
         <div class="user-panel">
             <div class="pull-left image">
                 <?php
-                 
+
                 if ($roleValue == 'murid') {
                     $foto = Murid::find()->where(['user_id' => $a])->one();
                     if ($foto && $foto->foto) {
@@ -30,12 +30,17 @@ $roleValue = reset($role);
                     } else {
                         $imgSrc = \Yii::getAlias('@web/uploads/default.png');
                     }
-                }else{
-                    $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                } else {
+                    $foto = Pegawai::find()->where(['id_user' => $a])->one();
+                    if ($foto && $foto->foto) {
+                        $imgSrc = \Yii::getAlias('@web/uploads/pegawai/' . $foto->id_pegawai . $foto->foto);
+                    } else {
+                        $imgSrc = \Yii::getAlias('@web/uploads/default.png');
+                    }
                 }
                 ?>
-                    <img src="<?= $imgSrc ?>" alt="User Image" />
-                
+                <img src="<?= $imgSrc ?>" alt="User Image" />
+
             </div>
             <div class="pull-left info">
                 <p><?= \Yii::$app->user->identity->username ?? ''; ?></p>

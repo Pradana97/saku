@@ -93,7 +93,7 @@ $jurusan = ArrayHelper::map(MsJurusan::find()->where(['status' => '1'])->all(), 
                     ],
                 ]) ?>
 
-                <?= $form->field($model, 'foto')->fileInput(['onchange' => 'previewImage(this)'])->label('File') ?>
+                <?= $form->field($model, 'foto')->fileInput(['onchange' => 'previewImage(this)'])->label('Foto') ?>
 
                 <?php
                 if ($model->foto != null) {
