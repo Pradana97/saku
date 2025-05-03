@@ -1,6 +1,7 @@
 <?php
 
 use app\models\Matapelajaran;
+use app\models\Materi;
 use yii\helpers\{Url, Html};
 use kartik\grid\GridView;
 use yii\helpers\ArrayHelper;
@@ -21,20 +22,10 @@ return [
     // ],
     [
         'class' => '\kartik\grid\DataColumn',
-        'attribute' => 'id_mapel',
-        'value' => 'mapel.msmapel.nama',
-        'label' => 'Mata Pelajaran',
+        'attribute' => 'id_materi',
+        'value' => 'materi.nama_materi',
         'filterType' => GridView::FILTER_SELECT2,
-        'filter' => ArrayHelper::map(
-            Matapelajaran::find()->where(['status' => '1'])->all(),
-            'id_mapel',
-            function ($model) {
-                return $model->msmapel->nama; // pastikan relasinya benar
-            },
-            function ($model) {
-                return $model->kelompok->nama_kelompok; // juga pastikan relasinya benar
-            }
-        ),
+        'filter' => ArrayHelper::map(Materi::find()->all(), 'id_mapel', 'nama_materi'),
         'filterWidgetOptions' => [
             'pluginOptions' => ['allowClear' => true],
         ],
