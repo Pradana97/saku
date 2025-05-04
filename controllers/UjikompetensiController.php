@@ -351,13 +351,21 @@ class UjikompetensiController extends Controller
                 echo "<tr>";
                 echo "<td style='width:5% ; font-weight: bold; text-align: center; font-size: 16px;'>{$no}</td>";
                 echo "<td style='width:65% ; font-weight: bold; font-size: 16px;'>{$row->soal}</td>";
-                echo "<td style=width:10% ; font-weight: bold;text-align: center; font-size: 16px;'>{$row->status}</td>";
-                echo "<td style='width:10%;'>" . Html::a('<button class=\"btn btn-primary btn-md\">Update</button>', ['ujikompetensi/update', 'id' => $row->id_soal]) . "</td>";
-                echo "<td style='width:10%;'>" . Html::a('<button class=\"btn btn-danger btn-md\">Hapus</button>', ['ujikompetensi/delete', 'id' => $row->id_soal], ['data' => ['confirm' => 'Yakin ingin menghapus?', 'method' => 'post']]) . "</td>";
+                $statusText = $row->status == 1 ? 'Aktif' : 'Tidak Aktif';
+                echo "<td class='status-col' style='width:10% ; font-weight: bold;text-align: center; font-size: 16px;'>{$statusText}</td>";
+                $statusLabel = $row->status == 1 ? 'Nonaktifkan' : 'Aktifkan';
+                echo "<td style='width:10%;'>
+                        <button class='btn btn-primary btn-md btn-toggle-status' data-id='{$row->id_soal}' data-status='{$row->status}'>
+                            {$statusLabel}
+                        </button>
+                      </td>";
+                echo "<td style='width:10%; text-align:center;'>
+                      <button class='btn btn-danger btn-md btn-hapus-soal' data-id='{$row->id_soal}'>Hapus</button>
+                    </td>";
                 echo "</tr>";
 
                 echo "<tr><td colspan='5'>";
-                echo "<table style='width:100%; background:#f9f9f9; margin-top:10px;'><thead><tr><th style='width:10%; text-align:center;'>Label</th><th style='width:70%;'>Jawaban</th><th style='width:20%; text-align:center;'>Keterangan</th></tr></thead><tbody>";
+                echo "<table style='width:100%; margin-top:10px;'><thead><tr><th style='width:10%; text-align:center;'>Label</th><th style='width:70%;'>Jawaban</th><th style='width:20%; text-align:center;'>Keterangan</th></tr></thead><tbody>";
 
                 $jawaban = Jawaban::find()->where(['id_soal' => $row->id_soal])->all();
                 foreach ($jawaban as $i => $row2) {
@@ -381,5 +389,139 @@ class UjikompetensiController extends Controller
         }
 
         return ['status' => 'error'];
+    }
+
+    public function actionTogglestatusganda()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $id = Yii::$app->request->post('id');
+        $soal = \app\models\Soal::findOne($id);
+
+        if ($soal) {
+            $soal->status = $soal->status == 1 ? 0 : 1;
+            $soal->save(false);
+
+            // Ambil ulang HTML seperti di deleteajax
+            ob_start();
+            $soalList = \app\models\Soal::find()->where(['id_uji' => $soal->id_uji])->all();
+            $no = 1;
+
+            foreach ($soalList as $row) {
+                $jawaban = \app\models\Jawaban::find()->where(['id_soal' => $row->id_soal])->all();
+
+                echo "<tr>";
+                echo "<td style='width:5%; font-weight:bold; text-align:center; font-size:16px;'>{$no}</td>";
+                echo "<td style='width:65%; font-weight:bold; font-size:16px;'>{$row->soal}</td>";
+                echo "<td class='status-col' style='width:10%; font-weight:bold; text-align:center; font-size:16px;'>"
+                    . ($row->status == 1 ? 'Aktif' : 'Tidak Aktif') . "</td>";
+                echo "<td style='width:10%; text-align:center;'>
+                        <button class='btn btn-primary btn-md btn-toggle-status' data-id='{$row->id_soal}' data-status='{$row->status}'>"
+                    . ($row->status == 1 ? 'Nonaktifkan' : 'Aktifkan') . "</button>
+                      </td>";
+                echo "<td style='width:10%;'>
+                        <button class='btn btn-danger btn-md btn-hapus-soal' data-id='{$row->id_soal}'>Hapus</button>
+                      </td>";
+                echo "</tr>";
+
+                echo "<tr><td colspan='5'><table style='width:100%; margin-top:10px;'>
+                        <thead>
+                            <tr>
+                                <th style='width:10%; text-align:center;'>Label</th>
+                                <th style='width:70%;'>Jawaban</th>
+                                <th style='width:20%; text-align:center;'>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>";
+
+                foreach ($jawaban as $i => $jwb) {
+                    $label = chr(65 + $i);
+                    $keterangan = $jwb->apa_benar === 'Y'
+                        ? "<span style='color:green; font-weight:bold;'>✔ Benar</span>"
+                        : "<span style='color:red;'>✘ Salah</span>";
+
+                    echo "<tr><td style='text-align:center;'>{$label}</td><td>{$jwb->jawab}</td><td style='text-align:center;'>{$keterangan}</td></tr>";
+                }
+
+                echo "<tr><td colspan='3'><hr></td></tr>";
+
+                echo "</tbody></table></td></tr>";
+                $no++;
+            }
+
+            $html = ob_get_clean();
+
+            return ['success' => true, 'soalHtml' => $html];
+        }
+
+        return ['success' => false];
+    }
+
+
+    public function actionDeleteajax()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $id = Yii::$app->request->post('id');
+        $soal = \app\models\Soal::findOne($id);
+
+        if ($soal) {
+            \app\models\Jawaban::deleteAll(['id_soal' => $id]);
+            $soal->delete();
+
+            // Ambil ulang HTML daftar soal — TIDAK pakai view terpisah
+            ob_start();
+            $soalList = \app\models\Soal::find()->where(['id_uji' => $soal->id_uji])->all();
+            $no = 1;
+
+            foreach ($soalList as $row) {
+                $jawaban = \app\models\Jawaban::find()->where(['id_soal' => $row->id_soal])->all();
+
+                echo "<tr>";
+                echo "<td style='width:5%; font-weight:bold; text-align:center; font-size:16px;'>{$no}</td>";
+                echo "<td style='width:65%; font-weight:bold; font-size:16px;'>{$row->soal}</td>";
+                echo "<td class='status-col' style='width:10%; font-weight:bold; text-align:center; font-size:16px;'>";
+                echo $row->status == 1 ? 'Aktif' : 'Tidak Aktif';
+                echo "</td>";
+                echo "<td style='width:10%; text-align:center;'>
+                        <button class='btn btn-primary btn-md btn-toggle-status' data-id='{$row->id_soal}' data-status='{$row->status}'>"
+                    . ($row->status == 1 ? 'Nonaktifkan' : 'Aktifkan') . "</button>
+                      </td>";
+                echo "<td style='width:10%;'>
+                        <button class='btn btn-danger btn-md btn-hapus-soal' data-id='{$row->id_soal}'>Hapus</button>
+                      </td>";
+                echo "</tr>";
+
+                echo "<tr><td colspan='5'><table style='width:100%; margin-top:10px;'>
+                        <thead>
+                            <tr>
+                                <th style='width:10%; text-align:center;'>Label</th>
+                                <th style='width:70%;'>Jawaban</th>
+                                <th style='width:20%; text-align:center;'>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>";
+
+                foreach ($jawaban as $i => $jwb) {
+                    $label = chr(65 + $i);
+                    $keterangan = $jwb->apa_benar === 'Y'
+                        ? "<span style='color:green; font-weight:bold;'>✔ Benar</span>"
+                        : "<span style='color:red;'>✘ Salah</span>";
+
+                    echo "<tr><td style='text-align:center;'>{$label}</td><td>{$jwb->jawab}</td><td style='text-align:center;'>{$keterangan}</td></tr>";
+                }
+
+                echo "<tr><td colspan='3'><hr></td></tr>";
+
+                echo "</tbody></table></td></tr>";
+                $no++;
+            }
+
+            $html = ob_get_clean();
+
+            return ['success' => true, 'soalHtml' => $html];
+        }
+
+        return ['success' => false];
     }
 }
