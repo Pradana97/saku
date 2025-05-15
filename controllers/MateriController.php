@@ -2,10 +2,14 @@
 
 namespace app\controllers;
 
+use app\models\Detailkelompokkelas;
+use app\models\Kelompokkelas;
+use app\models\Matapelajaran;
 use Yii;
 use yii\web\UploadedFile;
 use app\models\Materi;
 use app\models\MateriSearch;
+use app\models\Murid;
 use yii\web\{Controller, Response, NotFoundHttpException};
 use yii\filters\VerbFilter;
 use yii\helpers\{Html, Url, ArrayHelper};
@@ -203,5 +207,37 @@ class MateriController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    public function actionMateriuser()
+    {
+        $userid = Yii::$app->user->identity->id ?? '';
+        $role = \Yii::$app->tools->getcurrentroleuser();
+        $roleValue = reset($role);
+
+        if ($roleValue == 'murid') {
+            $datamurid = Murid::find()->where(['user_id' => $userid])->one()->id_murid;
+            $datadetailkelompokkelas = Detailkelompokkelas::find()->where(['id_murid' => $datamurid])->one()->id_kelompok;
+            $datakelompokkelas = Kelompokkelas::find()->where(['id_kelompok' => $datadetailkelompokkelas])->one()->nama_kelompok;
+            $datamatapelajaran = Matapelajaran::find()->where(['id_kelompok' => $datadetailkelompokkelas])->andWhere(['status' => 1])->all();
+            // var_dump($datamatapelajaran);die;
+        } elseif ($roleValue == 'guru') {
+        } else {
+        }
+
+        return $this->render('materiuser', [
+            'datamatapelajaran' => $datamatapelajaran,
+            'datakelompokkelas' => $datakelompokkelas
+
+        ]);
+    }
+
+    public function actionMaterinya($nd, $namamapel)
+    {
+        $datamateri = Materi::find()->where(['id_mapel' => $nd])->all();
+        return $this->render('detailmateriuser', [
+            'datamateri' => $datamateri,
+            'namamapel' => $namamapel
+        ]);
     }
 }

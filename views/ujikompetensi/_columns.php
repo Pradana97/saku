@@ -123,19 +123,31 @@ return [
 
     [
         'class' => 'kartik\grid\ActionColumn',
-        'template' => '{view}{update2}',
+        'template' => '{view}{jawab}',
         'buttons' => [
             'view' => function ($url, $model) {
                 return Html::a(
-                    '<span class="fa fa-users"> SOAL LATIHAN</span>',
+                    '<span class="fa fa-file-text-o"> SOAL LATIHAN</span>',
                     $url,
                     ['data-pjax' => 0, 'title' => 'BUAT SOAL', 'class' => 'btn btn-info btn-xs']
+                );
+            },
+
+            'jawab' => function ($url, $model) {
+                return Html::a(
+                    '<span class="fa fa-users"> JAWABAN MURID</span>',
+                    $url,
+                    ['data-pjax' => 0, 'title' => 'BUAT SOAL', 'class' => 'btn btn-success btn-xs']
                 );
             },
 
         ],
         'urlCreator' => function ($action, $model, $key, $index) {
             if ($action === 'view') {
+                return Url::toRoute(['ujikompetensi/soal', 'nd' => $model->id_uji, 'status' => $model->status]);
+            }
+
+            if ($action === 'jawab') {
                 return Url::toRoute(['ujikompetensi/soal', 'nd' => $model->id_uji, 'status' => $model->status]);
             }
         },

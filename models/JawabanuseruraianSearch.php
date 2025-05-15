@@ -5,15 +5,15 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Jawabanuser;
+use app\models\Jawabanuseruraian;
 
-class JawabanuserSearch extends Jawabanuser
+class JawabanuseruraianSearch extends Jawabanuseruraian
 {
     public function rules()
     {
         return [
-            [['id_jawabanuser', 'id_soal', 'id_jawaban', 'user_id', 'id_uji'], 'integer'],
-            [['apa_benar'], 'safe'],
+            [['id_jawabanuser', 'id_uji', 'user_id'], 'integer'],
+            [['nilai', 'dokumen'], 'safe'],
         ];
     }
     public function scenarios()
@@ -22,7 +22,7 @@ class JawabanuserSearch extends Jawabanuser
     }
     public function search($params, $where = null)
     {
-        $query = Jawabanuser::find()->where($where);
+        $query = Jawabanuseruraian::find()->where($where);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
@@ -32,13 +32,12 @@ class JawabanuserSearch extends Jawabanuser
         }
         $query->andFilterWhere([
             'id_jawabanuser' => $this->id_jawabanuser,
-            'id_soal' => $this->id_soal,
-            'id_jawaban' => $this->id_jawaban,
-            'user_id' => $this->user_id,
             'id_uji' => $this->id_uji,
+            'user_id' => $this->user_id,
         ]);
 
-        $query->andFilterWhere(['like', 'apa_benar', $this->apa_benar]);
+        $query->andFilterWhere(['like', 'nilai', $this->nilai])
+            ->andFilterWhere(['like', 'dokumen', $this->dokumen]);
         return $dataProvider;
     }
     //range move on generalmodeltraits
